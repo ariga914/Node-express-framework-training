@@ -1,0 +1,37 @@
+{
+    "name": "Node-express-framework-training",
+    "version": "1.0.0",
+    "description": "It's so hard to understand",
+    "main": "index.js",
+    "scripts": {
+        "dev": "nodemon server.ts"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ariga914/Node-express-framework-training.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/ariga914/Node-express-framework-training/issues"
+    },
+    "homepage": "https://github.com/ariga914/Node-express-framework-training#readme",
+    "devDependencies": {
+        "@types/node": "^16.3.2",
+        "nodemon": "^2.0.12"
+    },
+    "dependencies": {
+        "@types/jsonwebtoken": "^8.5.4",
+        "body-parser": "^1.19.0",
+        "cookie-parser": "^1.4.5",
+        "express": "^4.17.1",
+        "jsonwebtoken": "^8.5.1",
+        "multer": "^1.4.2",
+        "mysql": "^2.18.1",
+        "reflect-metadata": "^0.1.13",
+        "ts-node": "^10.1.0",
+        "typeorm": "^0.2.34",
+        "typescript": "^4.3.5"
+    }
+}
