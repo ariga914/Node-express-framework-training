@@ -44,7 +44,7 @@ createConnection(ormOptions)
             if (token == null) return res.sendStatus(401)
 
             jwt.verify(token, TOKEN_SECRET as string, (err: any, user: any) => {
-              console.log(err)
+              console.log(err);
           
               if (err) return res.sendStatus(403)
           
@@ -60,7 +60,7 @@ createConnection(ormOptions)
             res.status(200).send("Hi!. My name is Bi");
         });
 
-        app.get('/listUsers', authenticateToken, async function (req, res) {
+        app.get('/listUsers', authenticateToken, async (req, res: Response) => {
             // get a user repository to perform operations with user
             const userRepository = getManager().getRepository(User);
         
@@ -83,6 +83,19 @@ createConnection(ormOptions)
         
             // get a user repository to perform operations with user
             const userRepository = getManager().getRepository(User);
+            
+            //load a user by email and password
+            const exisitingUser = await userRepository.find({
+                where : {
+                    'email' : req.body.email,
+                    'password' : req.body.password
+                } 
+            });
+            //return mesg if user is not exisiting
+            if (exisitingUser && exisitingUser.length > 0) {
+                res.send("Emial is exisisting, Please input another email!");
+                return;
+            }
             const users = await userRepository.save(user);
         
             // return loaded users
