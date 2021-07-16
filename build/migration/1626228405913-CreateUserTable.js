@@ -44,7 +44,7 @@ var CreateUserTable1626228405913 = /** @class */ (function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, queryRunner.query("CREATE TABLE `users` (\n                `id` INT NOT NULL AUTO_INCREMENT,\n                `email` VARCHAR(45) NOT NULL,\n                `password` VARCHAR(45) NOT NULL,\n                `name` VARCHAR(45) NOT NULL,\n                `profession` VARCHAR(45) NULL,\n                PRIMARY KEY (`id`));")];
+                    case 0: return [4 /*yield*/, queryRunner.query("CREATE TABLE `users` (\n                `id` INT NOT NULL AUTO_INCREMENT,\n                `email` VARCHAR(45) NOT NULL,\n                `password` VARCHAR(45) NOT NULL,\n                `name` VARCHAR(45) NOT NULL,\n                `profession` VARCHAR(45) NOT NULL,\n                PRIMARY KEY (`id`));")];
                     case 1:
                         _a.sent();
                         return [2 /*return*/];

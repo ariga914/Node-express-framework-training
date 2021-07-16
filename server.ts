@@ -40,17 +40,17 @@ createConnection(ormOptions)
         function authenticateToken(req, res, next) {
             const authHeader = req.headers['authorization']
             const token = authHeader && authHeader.split(' ')[1]
-          
             if (token == null) return res.sendStatus(401)
 
             jwt.verify(token, TOKEN_SECRET as string, (err: any, user: any) => {
-              console.log(err);
+                console.log(err);
           
-              if (err) return res.sendStatus(403)
-          
-              req.user = user
-          
-              next()
+                if (err) return res.sendStatus(403)
+                console.log(req.user);
+                console.log("=====================");
+                req.user = user
+                console.log(user);
+                next()
             })
           }
           
@@ -73,7 +73,6 @@ createConnection(ormOptions)
         
         app.post('/add', async function (req: Request, res: Response) {
             // Prepare output in JSON format
-            console.log(req.body);
             const user = {
                 email: req.body.email,
                 name: req.body.name,
@@ -102,7 +101,7 @@ createConnection(ormOptions)
             res.send(users);
         })
         
-        app.get('/:id', authenticateToken, async function (req, res) {
+        app.get('/:id', async function (req, res) {
             // First read existing users.
             // get a user repository to perform operations with user
             const userRepository = getManager().getRepository(User);
@@ -126,8 +125,55 @@ createConnection(ormOptions)
             // get a user repository to perform operations with user
             const userRepository = getManager().getRepository(User);
         
+            const exisistingUser = await userRepository.findByIds(req.params.id);
+            if (exisistingUser.length === 0) {
+                res.sendStatus(404);
+            }
+            
             userRepository.delete(req.params.id);
             res.end();
+            return;
+        })
+
+        app.put('/:id', async (req, res) => {
+            // Prepare output in JSON format
+            const user = {
+                id: +req.params.id,
+                email: req.body.email,
+                name: req.body.name,
+                password: req.body.password,
+                profession: req.body.profession
+            };
+            
+            // First read existing users.
+            // get a user repository to perform operations with user
+            const userRepository = getManager().getRepository(User);
+
+            const exisistingUser = await userRepository.findByIds(req.params.id);
+            if (exisistingUser.length === 0) {
+                res.sendStatus(404);
+                return;
+            }
+
+            const users = await userRepository.save(user);
+
+            res.send(users);
+            return;
+        })
+
+        app.patch('/:id', async (req, res) => {
+                        
+            const userRepository = getManager().getRepository(User);
+
+            const exisistingUser = await userRepository.findByIds(req.params.id);
+            if (exisistingUser.length === 0) {
+                res.sendStatus(404);
+                return;
+            }
+            
+            await userRepository.update(req.params.id, req.body);
+            const updatedInfo = await userRepository.findByIds(req.params.id);
+            res.send(updatedInfo);
             return;
         })
 

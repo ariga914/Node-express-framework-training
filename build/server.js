@@ -42,6 +42,8 @@ var express = require("express");
 var bodyParser = require("body-parser");
 var typeorm_2 = require("typeorm");
 var User_1 = require("./entity/User");
+var jwt = require("jsonwebtoken");
+var console = require("console");
 var ormOptions = {
     type: 'mysql',
     host: 'localhost',
@@ -60,34 +62,57 @@ typeorm_1.createConnection(ormOptions)
     console.log('3306: [SUCCESS] Database connected!');
     // create express app
     var app = express();
+    var TOKEN_SECRET = '5f1b20d6b033c6097befa8be3486a829587fe2f90a832bd3ff9d42710a4';
+    app.use(bodyParser.urlencoded({
+        extended: true
+    }));
     app.use(bodyParser.json());
+    function generateAccessToken(email) {
+        return jwt.sign(email, TOKEN_SECRET, { expiresIn: '1800s' });
+    }
+    function authenticateToken(req, res, next) {
+        var authHeader = req.headers['authorization'];
+        var token = authHeader && authHeader.split(' ')[1];
+        if (token == null)
+            return res.sendStatus(401);
+        jwt.verify(token, TOKEN_SECRET, function (err, user) {
+            console.log(err);
+            if (err)
+                return res.sendStatus(403);
+            console.log(req.user);
+            console.log("=====================");
+            req.user = user;
+            console.log(user);
+            next();
+        });
+    }
     // Routes Definitions
     app.get("/", function (req, res) {
         res.status(200).send("Hi!. My name is Bi");
     });
-    app.get('/listUsers', function (req, res) {
-        return __awaiter(this, void 0, void 0, function () {
-            var userRepository, users;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        userRepository = typeorm_2.getManager().getRepository(User_1.User);
-                        return [4 /*yield*/, userRepository.find()];
-                    case 1:
-                        users = _a.sent();
-                        // return loaded users
-                        res.send(users);
-                        return [2 /*return*/];
-                }
-            });
+    app.get('/listUsers', authenticateToken, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+        var userRepository, users;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    userRepository = typeorm_2.getManager().getRepository(User_1.User);
+                    return [4 /*yield*/, userRepository.find()];
+                case 1:
+                    users = _a.sent();
+                    // return loaded users
+                    res.send(users);
+                    return [2 /*return*/];
+            }
         });
-    });
-    app.post('/addUser', function (req, res) {
+    }); });
+    app.post('/add', function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var user, userRepository, users;
+            var user, userRepository, exisitingUser, users;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        // Prepare output in JSON format
+                        console.log(req.body);
                         user = {
                             email: req.body.email,
                             name: req.body.name,
@@ -95,8 +120,21 @@ typeorm_1.createConnection(ormOptions)
                             profession: req.body.profession
                         };
                         userRepository = typeorm_2.getManager().getRepository(User_1.User);
-                        return [4 /*yield*/, userRepository.create(user)];
+                        return [4 /*yield*/, userRepository.find({
+                                where: {
+                                    'email': req.body.email,
+                                    'password': req.body.password
+                                }
+                            })];
                     case 1:
+                        exisitingUser = _a.sent();
+                        //return mesg if user is not exisiting
+                        if (exisitingUser && exisitingUser.length > 0) {
+                            res.send("Emial is exisisting, Please input another email!");
+                            return [2 /*return*/];
+                        }
+                        return [4 /*yield*/, userRepository.save(user)];
+                    case 2:
                         users = _a.sent();
                         // return loaded users
                         res.send(users);
@@ -105,7 +143,7 @@ typeorm_1.createConnection(ormOptions)
             });
         });
     });
-    app.get('/:id', function (req, res) {
+    app.get('/:id', authenticateToken, function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
             var userRepository, user;
             return __generator(this, function (_a) {
@@ -130,15 +168,44 @@ typeorm_1.createConnection(ormOptions)
     });
     app.delete('/:id', function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var userRepository;
+            var userRepository, exisistingUser;
             return __generator(this, function (_a) {
                 userRepository = typeorm_2.getManager().getRepository(User_1.User);
+                exisistingUser = userRepository.findByIds(req.params.id);
+                if (!exisistingUser) {
+                    res.sendStatus(404).end("This user doesn't exisit.");
+                    return [2 /*return*/];
+                }
                 userRepository.delete(req.params.id);
                 res.end();
                 return [2 /*return*/];
             });
         });
     });
+    app.post('/login', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+        var userRepository, user, token;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    userRepository = typeorm_2.getManager().getRepository(User_1.User);
+                    return [4 /*yield*/, userRepository.find({
+                            where: {
+                                'email': req.body.email,
+                                'password': req.body.password
+                            }
+                        })];
+                case 1:
+                    user = _a.sent();
+                    //return 403 if user is not exisiting
+                    if (!user || user.length === 0) {
+                        res.sendStatus(403);
+                    }
+                    token = generateAccessToken({ email: req.body.email });
+                    res.json(token);
+                    return [2 /*return*/];
+            }
+        });
+    }); });
     // run app
     app.listen(3000);
     console.log("Express application is up and running on port 3000");
