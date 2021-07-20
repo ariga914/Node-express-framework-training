@@ -123,7 +123,7 @@ createConnection(ormOptions)
             const userRepository = getManager().getRepository(User);
         
             const exisistingUser = await userRepository.findByIds(req.params.id);
-            if (exisistingUser.length === 0) {
+            if (!exisistingUser || exisistingUser.length ===0) {
                 res.sendStatus(404);
             }
             
@@ -147,7 +147,7 @@ createConnection(ormOptions)
             const userRepository = getManager().getRepository(User);
 
             const exisistingUser = await userRepository.findByIds(req.params.id);
-            if (exisistingUser.length === 0) {
+            if (!exisistingUser || exisistingUser.length ===0) {
                 res.sendStatus(404);
                 return;
             }
@@ -163,7 +163,7 @@ createConnection(ormOptions)
             const userRepository = getManager().getRepository(User);
 
             const exisistingUser = await userRepository.findByIds(req.params.id);
-            if (exisistingUser.length === 0) {
+            if (!exisistingUser || exisistingUser.length ===0) {
                 res.sendStatus(404);
                 return;
             }
