@@ -33,11 +33,11 @@ createConnection(ormOptions)
             extended : true
         }))
         app.use(bodyParser.json());
-        function generateAccessToken(email) {
+        function generateAccessToken(email: string | object | Buffer) {
             return jwt.sign(email, TOKEN_SECRET, { expiresIn: '1800s' });
         }
 
-        function authenticateToken(req, res, next) {
+        function authenticateToken(req: Request, res: Response, next: () => {}): void {
             const authHeader = req.headers['authorization']
             const token = authHeader && authHeader.split(' ')[1]
             if (token == null) return res.sendStatus(401)
@@ -46,21 +46,18 @@ createConnection(ormOptions)
                 console.log(err);
           
                 if (err) return res.sendStatus(403)
-                console.log(req.user);
-                console.log("=====================");
-                req.user = user
-                console.log(user);
+                
                 next()
             })
           }
           
         
         // Routes Definitions
-        app.get("/", (req, res) => {
+        app.get("/", (_req, res) => {
             res.status(200).send("Hi!. My name is Bi");
         });
 
-        app.get('/listUsers', authenticateToken, async (req, res: Response) => {
+        app.get('/listUsers', authenticateToken, async (_req, res: Response) => {
             // get a user repository to perform operations with user
             const userRepository = getManager().getRepository(User);
         
@@ -171,9 +168,7 @@ createConnection(ormOptions)
                 return;
             }
             
-            await userRepository.update(req.params.id, req.body);
-            const updatedInfo = await userRepository.findByIds(req.params.id);
-            res.send(updatedInfo);
+            const updatedInfo = await userRepository.save(Object.assign({id: +req.params.id}, req.body));            res.send(updatedInfo);
             return;
         })
 
